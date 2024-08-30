@@ -42,7 +42,7 @@ public class Hotel {
     public List<Reservation> getReservationsByUser(User user){ // this method is for the user to see their reservations
         List<Reservation> userReservations = new ArrayList<>();
         for (Reservation reservation : reservations){
-            if (reservation.getUser().equals(user))
+            if (reservation.getUser().equals(user) && reservation.isPaid())
                 userReservations.add(reservation);
         }
         return userReservations;
