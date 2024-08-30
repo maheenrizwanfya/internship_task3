@@ -1,10 +1,12 @@
 public class Payment {
     User user;
     double amount;
+    Reservation reservation;
 
-    public Payment(User user, double amount){
+    public Payment(User user, double amount, Reservation reservation){
         this.user = user;
         this.amount = amount;
+        this.reservation = reservation;
     }
 
     public boolean processPayment(){
@@ -14,16 +16,8 @@ public class Payment {
         }
         else{
             user.setBalance(user.getBalance() - amount);
-            System.out.println("Transaction successful");
+            reservation.markAsPaid();
             return true;
         }
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public double getAmount() {
-        return amount;
     }
 }
