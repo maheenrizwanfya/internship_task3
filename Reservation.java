@@ -1,5 +1,4 @@
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 public class Reservation {
     String reservationId;
@@ -8,6 +7,7 @@ public class Reservation {
     Date checkInDate;
     Date checkOutDate;
     double total;
+    boolean isPaid;
 
     public Reservation(String reservationId, Room room, User user, Date checkInDate, Date checkOutDate){
         this.reservationId = reservationId;
@@ -16,18 +16,20 @@ public class Reservation {
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
         total = calculateTotalAmount();
+        this.isPaid = false;
         room.setAvailable(false);
     }
 
-    public double calculateTotalAmount(){
-        long diffInMills = Math.abs(checkOutDate.getTime() - checkInDate.getTime()); // using .getTime(), we get the number of milliseconds between the checkin and checkout time
-        long nights = TimeUnit.DAYS.convert(diffInMills, TimeUnit.MILLISECONDS); // here using TimeUnit, we convert those milliseconds to days
+    public double calculateTotalAmount() {
+        long diffInMills = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
+        long nights = diffInMills / 86400000; // manually convert milliseconds to days (1000*60*60*24)
         return nights * room.getPricePerNight();
     }
 
     public boolean confirmReservation() {
-        Payment payment = new Payment(user, total);
+        Payment payment = new Payment(user, total, this); // "this" passes the current Reservation object as the third arguement for the Payment object
         if (payment.processPayment()) {
+            this.isPaid = true;
             room.setAvailable(false);
             return true;
         } else {
@@ -53,6 +55,14 @@ public class Reservation {
 
     public Date getCheckOutDate() {
         return checkOutDate;
+    }
+
+    public void markAsPaid() {
+        this.isPaid = true;
+    }
+
+    public boolean isPaid() {
+        return isPaid;
     }
 
     public double getTotal() {
