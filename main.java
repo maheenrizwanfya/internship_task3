@@ -36,8 +36,8 @@ public class main {
         while(running){
             System.out.println("\n1. Search Available Rooms");
             System.out.println("2. Make Reservations");
-            System.out.println("3. View Reservations");
-            System.out.println("4. Process Payment");
+            System.out.println("3. Process Payment");
+            System.out.println("4. View Reservations");
             System.out.println("5. Exit");
             int choice = input.nextInt();
             input.nextLine(); // consuming the enter thats pressed by the user so that later when the user is prompted, it can take the input
@@ -68,7 +68,7 @@ public class main {
                     try{
                         checkInDate = sdf.parse(input.nextLine());
                     }
-                    catch(ParseException e ){
+                    catch(ParseException e){
                         System.out.println("Invalid date format.");
                         continue;
                     }
@@ -77,23 +77,57 @@ public class main {
                     try{
                         checkOutDate = sdf.parse(input.nextLine());
                     }
-                    catch(ParseException e ){
+                    catch(ParseException e){
                         System.out.println("Invalid date format.");
                         continue;
                     }
-                    Room room = myHotel.getRooms().stream().filter(r -> r.getRoomNumber() == roomNumber).findFirst().orElse(null); // converts the list into a stream amd filters through it to find the room withe the required room number and find the first room u see or else present null
+                    Room room = myHotel.getRooms().stream().filter(r -> r.getRoomNumber() == roomNumber).findFirst().orElse(null); // converts the list into a stream amd filters through it to find the room with the required room number and find the first room u see or else present null
                     if (room != null && room.isAvailable()) {
                         Reservation reservation = myHotel.makeReservation(reservationID, room, user, checkInDate, checkOutDate);
                         if (reservation != null)
-                            System.out.println("Reservation made successfully. Total amount: " + reservation.getTotal());
+                            System.out.println("Total amount to be paid in the 'Process Payment' stage: " + reservation.getTotal());
                     } else
                         System.out.println("Room not available or invalid room number.");
                     break;
 
                 case 3:
+                    List<Reservation> unpaidReservations = myHotel.getReservationsByUser(user);
+                    if (unpaidReservations.isEmpty()) {
+                        System.out.println("No reservations found.");
+                    }
+                    else {
+                        System.out.println("Reservations:");
+                        for (Reservation res : unpaidReservations) {
+                            System.out.println("Reservation ID: " + res.getReservationId() +
+                                    ", Room Number: " + res.getRoom().getRoomNumber() +
+                                    ", Check-In: " + res.getCheckInDate() +
+                                    ", Check-Out: " + res.getCheckOutDate() +
+                                    ", Total: " + res.getTotal());
+                        }
+                        System.out.println("Enter Reservation ID to pay for:");
+                        String resIdToPay = input.nextLine();
+                        Reservation reservationToPay = unpaidReservations.stream()
+                                .filter(res -> res.getReservationId().equals(resIdToPay))
+                                .findFirst().orElse(null);
+                        if (reservationToPay != null) {
+                            System.out.println("Enter Payment Amount: ");
+                            double amount = input.nextDouble();
+                            Payment payment = new Payment(user, amount, reservationToPay);  // Pass the reservation
+                            if (payment.processPayment()) {
+                                System.out.println("Payment processed successfully.");
+                            } else {
+                                System.out.println("Payment failed.");
+                            }
+                        } else {
+                            System.out.println("Reservation not found.");
+                        }
+                    }
+                    break;
+
+                case 4:
                     List<Reservation> userReservations = myHotel.getReservationsByUser(user);
                     if (userReservations.isEmpty()) {
-                        System.out.println("No reservations found.");
+                        System.out.println("No paid reservations found.");
                     } else {
                         System.out.println("Reservations:");
                         for (Reservation res : userReservations) {
@@ -103,17 +137,6 @@ public class main {
                                     ", Check-Out: " + res.getCheckOutDate() +
                                     ", Total: " + res.getTotal());
                         }
-                    }
-                    break;
-
-                case 4:
-                    System.out.println("Enter Payment Amount: ");
-                    double amount = input.nextDouble();
-                    Payment payment = new Payment(user, amount);
-                    if (payment.processPayment()) {
-                        System.out.println("Payment processed successfully.");
-                    } else {
-                        System.out.println("Payment failed.");
                     }
                     break;
 
